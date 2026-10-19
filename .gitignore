@@ -1,0 +1,17 @@
+node_modules/
+dist/
+oclif.manifest.json
+*.tsbuildinfo
+.sf/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Dependencies and generated files
+node_modules/
+dist/
