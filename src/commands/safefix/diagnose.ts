@@ -87,7 +87,7 @@ export default class SafefixDiagnose extends AgentiaCommand {
           sent: false,
           chars: prompt.length,
           truncated,
-          prompt,
+          prompt: prompt.split('\n'),
         }
       } else {
         try {
