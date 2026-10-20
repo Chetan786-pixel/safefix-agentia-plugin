@@ -40,7 +40,9 @@
       "commands": [],
       "env": []
     },
-    "requires": []
+    "requires": [
+      "ai.ask"
+    ]
   },
   "oclif": {
     "bin": "agentia",
