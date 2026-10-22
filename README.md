@@ -1,12 +1,12 @@
-﻿# SafeFix — Agentia CLI Plugin
+﻿# SafeFix: Agentia CLI Plugin
 
-SafeFix is a **governed log triage** plugin for Agentia. It reads a local CI/CD, deployment or test log, **redacts secrets before anything leaves the machine**, detects known failure patterns (with Salesforce and Copado-style failures built in), and can optionally ask Copado AI for a diagnosis using only the redacted excerpt.
+SafeFix is a **governance layer for AI-assisted failure diagnosis**. It reads a local CI/CD, deployment or test log, **redacts secrets before anything leaves the machine**, detects known failure patterns (Salesforce and Copado-style failures built in), can act as a **CI policy gate**, and can optionally ask Copado AI for a diagnosis using only the redacted excerpt.
 
 > **Important:** SafeFix is a pattern-based triage tool, not a complete security scanner. Redaction is best-effort and does not guarantee that every secret is removed. It never executes fixes.
 
 ## Why
 
-AI diagnosis of a failed deployment is useful, but raw logs often contain session IDs, refresh tokens, passwords and connection strings. SafeFix puts a redaction step in front of the AI call and lets you **preview exactly what would be sent** (`--dry-run`) before anything is transmitted.
+Failed deployment logs often contain session IDs, refresh tokens, passwords and connection strings. Pasting them into an AI tool can leak credentials. SafeFix puts a redaction step in front of the AI call, lets you **preview exactly what would be sent** (`--dry-run`), and can **block a pipeline** when serious findings appear (`--fail-on`).
 
 ## Requirements
 
@@ -24,7 +24,9 @@ agentia plugins link .
 
 The linked plugin runs the compiled code in `dist/`, so run `npm run build` after every code change.
 
-## Usage
+## Commands
+
+### `agentia safefix diagnose`
 
 Local triage (no network, no AI):
 
@@ -32,10 +34,16 @@ Local triage (no network, no AI):
 agentia safefix diagnose --file .\demo\salesforce-deploy-failure.log
 ```
 
-Preview the exact, already-redacted request that would be sent to Copado AI (nothing is sent):
+Preview the exact, already-redacted request that would go to Copado AI (nothing is sent):
 
 ```powershell
 agentia safefix diagnose --file .\demo\salesforce-deploy-failure.log --ai --dry-run
+```
+
+CI policy gate: exit with code 1 if any finding is at or above a severity (`low`, `medium`, `high`):
+
+```powershell
+agentia safefix diagnose --file .\demo\salesforce-deploy-failure.log --fail-on high
 ```
 
 Request a Copado AI diagnosis (requires AI credentials, see below):
@@ -44,7 +52,24 @@ Request a Copado AI diagnosis (requires AI credentials, see below):
 agentia safefix diagnose --file .\demo\salesforce-deploy-failure.log --ai
 ```
 
-The output is JSON: findings (rule, severity, first line number, occurrence count, evidence, recommendation), severity counts, and whether any secret was redacted.
+Output is JSON: findings (rule, severity, first line number, occurrence count, evidence, recommendation), severity counts, and whether any secret was redacted.
+
+### `agentia safefix redact`
+
+Redact a log so it can be shared safely in a ticket or chat. No AI, no network:
+
+```powershell
+agentia safefix redact --file .\demo\salesforce-deploy-failure.log
+agentia safefix redact --file .\demo\salesforce-deploy-failure.log --out .\clean.log
+```
+
+### Use as a pipeline gate
+
+Because `--fail-on` sets a non-zero exit code, SafeFix can stop a pipeline step:
+
+```bash
+agentia safefix diagnose --file build.log --fail-on high || exit 1
+```
 
 ### Copado AI credentials
 
@@ -85,7 +110,7 @@ npm run build
 npm test
 ```
 
-Quality gates (`.agentia_quality_gates.cmd` / `.sh`) build the plugin and run the test suite; they exit non-zero on failure.
+Quality gates (`.agentia_quality_gates.cmd` / `.sh`) build the plugin and run the test suite (17 tests); they exit non-zero on failure.
 
 ## Limitations
 
