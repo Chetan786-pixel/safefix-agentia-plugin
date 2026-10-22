@@ -1,7 +1,7 @@
 ﻿import { readFile } from 'node:fs/promises'
 import { AgentiaCommand, getAgentiaHost } from '@copado/agentia-plugin-sdk'
 import { Flags } from '@oclif/core'
-import { analyzeLog, redactSecrets } from '../../lib/analyzer.js'
+import { analyzeLog, meetsThreshold, redactSecrets, type Severity } from '../../lib/analyzer.js'
 
 const MAX_AI_CHARS = 10_000
 
@@ -12,6 +12,7 @@ export default class SafefixDiagnose extends AgentiaCommand {
   static override examples = [
     '$ agentia safefix diagnose --file ./sample-error.log',
     '$ agentia safefix diagnose --file ./sample-error.log --ai --dry-run',
+    '$ agentia safefix diagnose --file ./sample-error.log --fail-on high',
     '$ agentia safefix diagnose --file ./sample-error.log --ai',
   ]
 
@@ -28,6 +29,10 @@ export default class SafefixDiagnose extends AgentiaCommand {
     'dry-run': Flags.boolean({
       description: 'With --ai: show exactly what would be sent to AI (already redacted) without sending it',
       default: false,
+    }),
+    'fail-on': Flags.string({
+      description: 'Exit with code 1 if any finding is at or above this severity (CI gate)',
+      options: ['low', 'medium', 'high'],
     }),
   }
 
@@ -113,6 +118,12 @@ export default class SafefixDiagnose extends AgentiaCommand {
     }
 
     this.log(JSON.stringify(report, null, 2))
+
+        if (flags['fail-on'] && meetsThreshold(analysis, flags['fail-on'] as Severity)) {
+      this.warn(`SafeFix gate failed: findings at or above "${flags['fail-on']}" severity.`)
+      process.exitCode = 1
+    }
+
     return report
   }
 }

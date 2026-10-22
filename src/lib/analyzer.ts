@@ -216,3 +216,11 @@ export function analyzeLog(input: string): AnalysisReport {
     },
   }
 }
+
+const severityRank: Record<Severity, number> = { low: 1, medium: 2, high: 3 }
+
+export function meetsThreshold(report: AnalysisReport, threshold: Severity): boolean {
+  return report.findings.some(
+    (finding) => severityRank[finding.severity] >= severityRank[threshold],
+  )
+}

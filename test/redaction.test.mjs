@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { analyzeLog, redactSecrets } from '../dist/lib/analyzer.js'
+import { analyzeLog, meetsThreshold, redactSecrets } from '../dist/lib/analyzer.js'
 
 test('redacts passwords inside JSON', () => {
   const { text, changed } = redactSecrets('{"password": "hunter2-not-real", "user": "demo"}')
@@ -66,4 +66,10 @@ test('counts repeated occurrences of the same rule', () => {
   const finding = report.findings.find((f) => f.rule === 'NETWORK_FAILURE')
   assert.equal(finding.occurrences, 3)
   assert.equal(finding.line, 1)
+})
+
+test('meetsThreshold gates on severity', () => {
+  const report = analyzeLog('Tests failed')
+  assert.equal(meetsThreshold(report, 'low'), true)
+  assert.equal(meetsThreshold(report, 'high'), false)
 })
