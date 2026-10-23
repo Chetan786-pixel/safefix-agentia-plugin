@@ -73,3 +73,9 @@ test('meetsThreshold gates on severity', () => {
   assert.equal(meetsThreshold(report, 'low'), true)
   assert.equal(meetsThreshold(report, 'high'), false)
 })
+
+test('redacts generic Authorization header tokens', () => {
+  const { text } = redactSecrets('Authorization: OAuth abcdef123456SECRETTOKEN\nAuthorization: Token abc123SECRET')
+  assert.ok(!text.includes('SECRETTOKEN'))
+  assert.ok(!text.includes('abc123SECRET'))
+})

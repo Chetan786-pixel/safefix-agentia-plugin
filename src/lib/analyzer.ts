@@ -55,6 +55,12 @@ const secretPatterns: Array<{ pattern: RegExp; replacement: string }> = [
     pattern: /\b([a-z][a-z0-9+.-]*:\/\/)[^\s:@/]+:[^\s@/]+@/gi,
     replacement: '$1[REDACTED]:[REDACTED]@',
   },
+
+    // Generic Authorization header schemes (the Salesforce rule above runs first so its label wins)
+  {
+    pattern: /(Authorization:\s*(?:OAuth|Token|Digest|Negotiate)\s+)(?!\[REDACTED)[^\s]+/gi,
+    replacement: '$1[REDACTED]',
+  },
 ]
 
 export function redactSecrets(input: string): {
