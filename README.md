@@ -110,7 +110,7 @@ npm run build
 npm test
 ```
 
-Quality gates (`.agentia_quality_gates.cmd` / `.sh`) build the plugin and run the test suite (17 tests); they exit non-zero on failure.
+Quality gates (`.agentia_quality_gates.cmd` / `.sh`) build the plugin and run the test suite (18 tests); they exit non-zero on failure.
 
 ## Limitations
 
@@ -119,7 +119,6 @@ Quality gates (`.agentia_quality_gates.cmd` / `.sh`) build the plugin and run th
 - SafeFix recommends actions but does not execute fixes.
 - When using `--ai`, only the last 10,000 characters of the redacted log are sent, together with the local triage notes.
 - The plugin reads a user-provided local file. Review Agentia plugin permission metadata and host compatibility before distributing it.
-- The dependency audit currently reports a transitive `braces` vulnerability through `oclif`. Do not use `npm audit fix --force` without validating compatibility.
 
 ## License
 
